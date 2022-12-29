@@ -69,23 +69,14 @@ nlu:
     - actually file a claim
     - i was in a [car]{"entity": "quote_insurance_type", "value": "auto"} crash
     - file a new claim
-- intent: make_payment
+- intent: get_an_insurance
   examples: |
-    - pay a [claim](payment_type)
-    - make a payment
-    - pay off a [claim](payment_type)
-    - pay what i owe
-    - pay my bill
-    - submit a payment
-    - pay [claim](payment_type)
-    - pay bill
-    - i want to pay a [claim](payment_type)
-    - make a [claim](payment_type) payment
-    - payment
-    - bill
-    - what's my bill
-    - do i owe a payment
-    - pay my deductible
+    - pay for insurance
+    - i want to get an insurance
+    - i need an insurance
+    - i am going to buy an insurance
+    - can i get an insurance
+    - get a new insurance
 - intent: inform
   examples: |
     - 34

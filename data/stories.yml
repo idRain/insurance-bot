@@ -1,5 +1,25 @@
 version: "2.0"
 stories:
+- story: member wants to get a new insurance (happy path)
+  steps:
+  - intent: get_an_insurance
+  - action: quote_form
+  - active_loop: quote_form
+  - active_loop: null
+  - action: action_get_an_insurance
+
+- story: affirm to pay for the insurance
+  steps:
+  - intent: affirm
+  - action: action_final_insurance_affirm
+  - action: utter_anything_else
+
+- story: deny to pay for the insurance
+  steps:
+    - intent: deny
+    - action: action_final_insurance_deny
+    - action: utter_anything_else
+
 - story: member wants a new insurance quote (happy path)
   steps:
   - intent: get_a_quote
@@ -64,7 +84,7 @@ stories:
   - active_loop: get_claim_form
   - active_loop: null
   - action: action_claim_status
-  - action: action_check_claim_balance
+  - action: utter_anything_else
 - story: if member doesn't know claim then scroll through recent claims.
   steps:
   - action: utter_ask_knows_claim_id
@@ -81,39 +101,12 @@ stories:
     - claim_id: 123456
   - action: utter_notify_active_claim
   - action: action_claim_status
-  - action: action_check_claim_balance
+  - action: utter_anything_else
 - story: user exits form scrolling
   steps:
   - action: action_scroll_claims_form_exit
   - slot_was_set:
     - scroll_status: cancel
-  - action: utter_anything_else
-- story: active claim has an outstanding balance.
-  steps:
-  - action: action_check_claim_balance
-  - slot_was_set:
-    - has_outstanding_balance: true
-  - action: utter_pay_outstanding_balance
-- story: active claim pay outstanding balance.
-  steps:
-  - action: utter_pay_outstanding_balance
-  - intent: affirm
-  - action: pay_claim_form
-  - active_loop: pay_claim_form
-  - active_loop: null
-  - action: action_pay_claim
-  - action: utter_anything_else
-- story: active claim deny pay outstanding balance.
-  steps:
-  - action: utter_pay_outstanding_balance
-  - intent: deny
-  - action: utter_anything_else
-- story: active claim has no balance.
-  steps:
-  - action: action_check_claim_balance
-  - slot_was_set:
-    - has_outstanding_balance: false
-  - action: utter_has_no_balance
   - action: utter_anything_else
 - story: check if member cancels claim scrolling.
   steps:
@@ -131,7 +124,7 @@ stories:
   - active_loop: null
   - action: utter_notify_active_claim
   - action: action_claim_status
-  - action: action_check_claim_balance
+  - action: utter_anything_else
 - story: member updates their info, deny update
   steps:
   - intent: update_member_info
@@ -152,35 +145,6 @@ stories:
   - active_loop: change_address_form
   - active_loop: null
   - action: action_update_address
-  - action: utter_anything_else
-- story: make a payment, claim
-  steps:
-  - intent: make_payment
-  - action: pay_claim_form
-  - active_loop: pay_claim_form
-  - active_loop: null
-  - action: action_pay_claim
-  - action: utter_anything_else
-- story: make payment, claim, uncertain
-  steps:
-  - intent: make_payment
-  - action: pay_claim_form
-  - active_loop: pay_claim_form
-  - or:
-    - intent: uncertain
-    - intent: deny
-    - intent: claim_status
-  - action: action_deactivate_loop
-  - active_loop: null
-  - action: utter_here_are_recent_claims
-  - action: scroll_claims_form
-  - active_loop: scroll_claims_form
-  - active_loop: null
-  - action: action_scroll_claims_form_exit
-  - action: pay_claim_form
-  - active_loop: pay_claim_form
-  - active_loop: null
-  - action: action_pay_claim
   - action: utter_anything_else
 - story: anything else affirm
   steps:

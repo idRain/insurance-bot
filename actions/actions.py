@@ -29,6 +29,78 @@ US_STATES = ["AZ", "AL", "AK", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "
              "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH",
              "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"]
 
+class ActionGetAnInsurance(Action):
+  def name(self) -> Text:
+    return "action_get_an_insurance"
+
+  async def run(
+    self,
+    dispatcher: CollectingDispatcher,
+    tracker: Tracker,
+    domain: Dict,
+  ) -> List[EventType]:
+
+    # Build the quote from the provided data.
+    category = tracker.get_slot("AA_quote_insurance_type")
+    n_persons = int(tracker.get_slot("quote_number_persons"))
+
+    baseline_rate = MOCK_DATA["policy_quote"]["insurance_type"][category]
+    final_quote = baseline_rate * n_persons
+    final_quote = int(final_quote * MOCK_DATA["policy_quote"]["state"][tracker.get_slot("state")])
+
+    dispatcher.utter_message(template="utter_get_an_insurance", **{"final_quote": final_quote})
+
+    return []
+
+class ActionFinalInsuranceAffirm(Action):
+  def name(self) -> Text:
+    return "action_final_insurance_affirm"
+
+  async def run(
+    self,
+    dispatcher: CollectingDispatcher,
+    tracker: Tracker,
+    domain: Dict[Text, Any],
+  ) -> List[Dict]:
+    """Executes the action"""
+    slots = ["AA_quote_insurance_type", "quote_state", "quote_number_persons", "number", "state"]
+
+    # Build the quote from the provided data.
+    category = tracker.get_slot("AA_quote_insurance_type")
+    insurance_date = datetime.datetime.strftime(datetime.datetime.today(), "%Y%m%d")
+    insurance_id = "NI" + "".join([str(random.randint(0, 9)) for i in range(6)])
+    n_persons = int(tracker.get_slot("quote_number_persons"))
+
+    msg_params = {
+      "insurance_id": insurance_id,
+      "insurance_date": insurance_date,
+      "category": category,
+      "count_of_people": n_persons,
+      "limit_of_usage": 3
+    }
+
+    dispatcher.utter_message(template="utter_final_insurance", **msg_params)
+    MOCK_DATA["insurances"].append(msg_params)
+
+    # Reset the slot values.
+    return [SlotSet(slot, None) for slot in slots]
+
+class ActionFinalInsuranceDeny(Action):
+  def name(self) -> Text:
+    return "action_final_insurance_deny"
+
+  async def run(
+    self,
+    dispatcher: CollectingDispatcher,
+    tracker: Tracker,
+    domain: Dict[Text, Any],
+  ) -> List[Dict]:
+    """Executes the action"""
+    slots = ["AA_quote_insurance_type", "quote_state", "quote_number_persons", "number", "state"]
+
+    dispatcher.utter_message("Ok. You denied to pay for an insurance")
+    # Reset the slot values.
+    return [SlotSet(slot, None) for slot in slots]
 
 # Get New Quote Actions
 
@@ -54,12 +126,14 @@ class ActionGetQuote(Action):
 
         baseline_rate = MOCK_DATA["policy_quote"]["insurance_type"][insurance_type]
         final_quote = baseline_rate * n_persons
+        final_quote = int(final_quote * MOCK_DATA["policy_quote"]["state"][tracker.get_slot("state")])
 
         msg_params = {
             "final_quote": final_quote,
             "insurance_type": insurance_type.capitalize(),
             "quote_state": tracker.get_slot("quote_state"),
-            "n_persons": n_persons
+            "n_persons": n_persons,
+            "usage_limit": 3
         }
         dispatcher.utter_message(template="utter_final_quote", **msg_params)
 
@@ -412,11 +486,10 @@ class ActionClaimStatus(Action):
                 "claim_date": formatted_date,
                 "claim_id": clm["claim_id"],
                 "claim_balance": f"${str(clm['claim_balance'])}",
-                "claim_status": clm["claim_status"]
+                "claim_status": clm["claim_status"],
+                "claim_category": clm["claim_category"]
             }
             dispatcher.utter_message(template="utter_claim_detail", **clm_params)
-
-            return [SlotSet("has_outstanding_balance", True)]
 
         else:
             dispatcher.utter_message("I don't know that claim...")
@@ -554,15 +627,28 @@ class ActionFileNewClaimForm(Action):
         if tracker.get_slot("confirm_file_new_claim") == "yes":
             # Submit a new claim.
             claim_id = "NC" + "".join([str(random.randint(0, 9)) for i in range(6)])
+
+            insurance_type = tracker.get_slot("AA_quote_insurance_type")
             claim_obj = {
                 "claim_id": claim_id,
+                "claim_category": insurance_type,
                 "claim_balance": tracker.get_slot("claim_amount_submit"),
                 "claim_date": datetime.datetime.strftime(datetime.datetime.today(), "%Y%m%d"),
                 "claim_status": "Pending"
             }
 
-            MOCK_DATA["claims"].append(claim_obj)
-            dispatcher.utter_message(f"Your claim has been submitted.\n\nFor reference the claim id is: {claim_id}")
+            flag = 0
+            for ins in MOCK_DATA["insurances"]:
+              if (ins["category"] == insurance_type) and (ins["limit_of_usage"] > 0):
+                flag = 1
+                MOCK_DATA["claims"].append(claim_obj)
+                ins["limit_of_usage"] -= 1
+                dispatcher.utter_message(f"Your claim has been submitted.\nFor reference the claim id is: {claim_id}")
+                break
+
+            if flag == 0:
+              dispatcher.utter_message("Claim is denied. Sorry, but you do not have any relevant insurance.")
+
         else:
             dispatcher.utter_message("Ok. Submitting your claim has been canceled.")
 
@@ -895,7 +981,8 @@ def claims_scroll(curr_page, scroll_status):
         "claim_date": str(datetime.datetime.strptime(str(page_claims["claim_date"]), "%Y%m%d").date()),
         "claim_id": page_claims["claim_id"],
         "claim_balance": f"${str(page_claims['claim_balance'])}",
-        "claim_status": page_claims["claim_status"]
+        "claim_status": page_claims["claim_status"],
+        "claim_category": page_claims["claim_category"]
     }
 
     return {"page": curr_page,

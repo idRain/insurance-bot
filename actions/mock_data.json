@@ -1,33 +1,40 @@
 {
-    "claims": [
+    "insurances": [
       {
-        "claim_id": "XX123456",
-        "claim_date": 20201004,
-        "claim_balance": 0,
-        "claim_status": "Final"
-      },
+        "insurance_id": "OI123456",
+        "insurance_date": 20221001,
+        "category": "auto",
+        "count_of_people": 2,
+        "limit_of_usage": 1
+      }
+    ],
+    "claims": [
       {
         "claim_id": "AB234567",
         "claim_date": 20200312,
         "claim_balance": 5000,
+        "claim_category": "home",
         "claim_status": "Pending"
       },
       {
         "claim_id": "Z345678",
         "claim_date": 20201130,
         "claim_balance": 200,
+        "claim_category": "auto",
         "claim_status": "Submitted"
       },
       {
         "claim_id": "C456789",
         "claim_date": 20200903,
         "claim_balance": 500,
+        "claim_category": "health",
         "claim_status": "Final"
       },
       {
         "claim_id": "CL567890",
         "claim_date": 20200203,
         "claim_balance": 3000,
+        "claim_category": "life",
         "claim_status": "Pending"
       }
   ],
@@ -41,6 +48,59 @@
     "premium_amt": 100
   },
   "policy_quote": {
+    "state": {
+      "AL": 0.1,
+      "AK": 0.2,
+      "AZ": 0.3,
+      "AR": 0.4,
+      "CA": 0.5,
+      "CO": 0.6,
+      "CT": 0.7,
+      "DE": 0.8,
+      "DC": 0.9,
+      "FL": 1,
+      "GA": 1.1,
+      "HI": 1.2,
+      "ID": 1.3,
+      "IL": 1.4,
+      "IN": 1.5,
+      "IA": 1.6,
+      "KS": 1.7,
+      "KY": 1.8,
+      "LA": 1.9,
+      "ME": 2,
+      "MD": 2.1,
+      "MA": 2.2,
+      "MI": 2.3,
+      "MN": 2.4,
+      "MS": 2.5,
+      "MO": 2.6,
+      "MT": 2.7,
+      "NE": 2.8,
+      "NV": 2.9,
+      "NH": 3,
+      "NJ": 3.1,
+      "NM": 3.2,
+      "NY": 3.3,
+      "NC": 3.4,
+      "ND": 3.5,
+      "OH": 3.6,
+      "OK": 3.7,
+      "OR": 3.8,
+      "PA": 3.9,
+      "RI": 4.1,
+      "SC": 4.2,
+      "SD": 4.3,
+      "TN": 4.5,
+      "TX": 4.6,
+      "UT": 4.7,
+      "VT": 4.8,
+      "VA": 4.9,
+      "WA": 5,
+      "WV": 5.1,
+      "WI": 5.2,
+      "WY": 5.3
+    },
     "insurance_type": {
       "home": 50,
       "auto": 100,

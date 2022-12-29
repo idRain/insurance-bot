@@ -35,7 +35,7 @@ intents:
     use_entities: true
 - uncertain:
     use_entities: true
-- make_payment:
+- get_an_insurance:
     use_entities: true
 - cancel_action:
     use_entities: true
@@ -97,6 +97,11 @@ slots:
     initial_value: null
     auto_fill: false
     influence_conversation: false
+  claim_category:
+    type: rasa.shared.core.slots.TextSlot
+    initial_value: null
+    auto_fill: true
+    influence_conversation: true
   claims:
     type: rasa.shared.core.slots.AnySlot
     initial_value: null
@@ -188,6 +193,22 @@ slots:
     auto_fill: true
     influence_conversation: true
 responses:
+  utter_get_an_insurance:
+    - buttons:
+      - payload: /affirm
+        title: Yes
+      - payload: /deny
+        title: No
+      text: Would you to pay {final_quote} for the insurance?
+  utter_final_insurance:
+    - text: |-
+        You successfully got an insurance
+        
+        Insurance ID: {insurance_id}
+        Insurance Date: {insurance_date}
+        Insurance Category: {category}
+        Number of people on policy: {count_of_people}
+        Limit of usage: {limit_of_usage}
   utter_ask_address_street:
   - text: What is your mailing street number and name?
   utter_ask_address_city:
@@ -304,14 +325,15 @@ responses:
       Insurance Type: {insurance_type}
       Policy State: {quote_state}
       Number of people on policy: {n_persons}
+      Limit of usage: {usage_limit}
   utter_greet:
   - buttons:
     - payload: /claim_status
       title: Check Claim Status
     - payload: /new_id_card
       title: Order New ID Card
-    - payload: /make_a_payment
-      title: Pay a Claim
+    - payload: /get_an_insurance
+      title: Get an insurance
     - payload: /get_a_quote
       title: Get a Quote
     - payload: /file_a_claim
@@ -361,7 +383,7 @@ responses:
   utter_claims_scroll_exit_suggest_action:
   - text: I can also help you make a payment towards one of your claims.
   utter_claim_detail:
-  - text: 'Claim ID: {claim_id}\nClaim Date: {claim_date}\nAmount Owed: {claim_balance}\nClaim Status: {claim_status}'
+  - text: 'Claim ID: {claim_id}\nClaim Date: {claim_date}\nAmount Owed: {claim_balance}\nClaim Status: {claim_status}\nCategory: {claim_category}'
   utter_claim_id_provided:
   - text: Let me get the status for claim {claim_id}
   utter_claim_status:
@@ -398,6 +420,9 @@ responses:
   - text: I can help you get a new insurance quote. Let's learn a little more about you.
 actions:
 - validate_quote_form
+- action_get_an_insurance
+- action_final_insurance_affirm
+- action_final_insurance_deny
 - action_get_quote
 - action_stop_quote
 - action_claim_status
@@ -425,6 +450,7 @@ actions:
 - action_recent_claims
 - action_check_claim_balance
 forms:
+
   quote_form:
     required_slots:
       AA_quote_insurance_type:
